@@ -1,27 +1,24 @@
-// Define the LED digit patters, from 0 to 9
+// Updated 11/15/2015
+// Created by: Nathaniel Deal
+//
+// Define the LED digit patterns, from 0 to 9
 // Note that these patterns are for common anode displays
 // 0 = LED on, 1 = LED off:
 
 
-int displayCount = 25;  // Intial count
-
-int countSet = displayCount; // Store initial count
-
-const int analogInPin = A2;  // Analog input pin that the ir reciever is attached to
-
-int sensorValue = 0;        // value read from the ir beam
-int outputValue = 0;        // value output to the PWM (analog out)
-boolean hasCleared = true;
+int displayCount = 20;  // Intial count
 
 int firstDigit;
 int secondDigit;
 boolean resetState; 
+boolean counterState; 
 
 const int resetPin = 6;     // Use digital pin 6 for the reset pin
+const int counterPin = 7;     // Use digital pin 7 for the counter pin
 
-int SER_Pin = 7;   //pin 14 on the 75HC595
-int RCLK_Pin = 8;  //pin 12 on the 75HC595
-int SRCLK_Pin = 9; //pin 11 on the 75HC595
+int SER_Pin = 8;   //Serial-In pin 14 on the 75HC595
+int RCLK_Pin = 9;  //Latch Clock pin 12 on the 75HC595
+int SRCLK_Pin = 10; //Clock pin 11 on the 75HC595
 
 //How many of the shift registers - change this
 #define number_of_74hc595s 2 
@@ -32,9 +29,12 @@ int SRCLK_Pin = 9; //pin 11 on the 75HC595
 boolean registers[numOfRegisterPins];
 
 void setup() {
-
+  
   pinMode(resetPin, INPUT);
-  digitalWrite(resetPin, HIGH);
+  digitalWrite(resetPin, HIGH); //pull-up
+  
+  pinMode(counterPin, INPUT);
+  digitalWrite(counterPin, HIGH); //pull-up
   
   pinMode(SER_Pin, OUTPUT);
   pinMode(RCLK_Pin, OUTPUT);
@@ -52,48 +52,25 @@ void setup() {
 
 void loop(){
   
-  sensorValue = analogRead(analogInPin); // read the analog in value:
-  outputValue = map(sensorValue, 0, 1023, 0, 255);  // map it to the range of the analog out:
+  resetState = !digitalRead(resetPin); // pin low -> reset pressed
+  counterState = !digitalRead(counterPin); // pin low -> counter pressed
   
-  resetState = digitalRead(resetPin);
+  Serial.println(counterState);
   
-  // print the results to the serial monitor:
-  
-  //Serial.print("sensor = " );                       
-  //Serial.print(sensorValue);      
-  if (outputValue > 100) {
-    Serial.print("\t output = ");      
-    Serial.println(outputValue);
-  }
-  
-  // if dart is cleared and beam is broken then countdown
-  if ( hasCleared == true ) {
-  
-    if (outputValue > 200) {       
-      changeNumber(); 
-      hasCleared = false;
-      //delay(2);
-    }
-  }
-  
-  // check to see if dart has cleared
-  if (outputValue < 50) {
-    hasCleared = true;
-  }
-  
-  // check if the magazine has been ejected and reloaded
-  if (resetState == LOW) {       
+  if (resetState) {       
     resetNumber(); 
   }
   
+  if (counterState) {       
+    changeNumber();  
+  }
 
 }
 
 void resetNumber() {
+  displayCount = 19; 
   
-  displayCount = countSet - 1;
-  
-  displayNumber(2,5);
+  displayNumber(2,0);
   writeRegisters();  //Send data to the 75HC595
 }
 
@@ -134,8 +111,7 @@ void changeNumber() {
     
     // displayNumber(10); //Turn off all segments
     
-    // add double zero blink here
-    
+    // add double zero blink and buzzer function here instead
     
     // clearRegisters();
     writeRegisters(); 
@@ -454,5 +430,4 @@ void writeRegisters(){
 void setRegisterPin(int index, int value){
   registers[index] = value;
 }
-
 
