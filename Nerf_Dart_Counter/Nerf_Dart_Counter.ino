@@ -1,4 +1,5 @@
-// Updated 11/15/2015
+// Define the LED digit patters, from 0 to 9		
+// Updated 12/9/2015
 // Created by: Nathaniel Deal
 //
 // Define the LED digit patterns, from 0 to 9
@@ -13,12 +14,12 @@ int secondDigit;
 boolean resetState; 
 boolean counterState; 
 
-const int resetPin = 6;     // Use digital pin 6 for the reset pin
-const int counterPin = 7;     // Use digital pin 7 for the counter pin
+const int resetPin = 5;     // Use digital pin 6 for the reset pin
+const int counterPin = 6;     // Use digital pin 7 for the counter pin
 
-int SER_Pin = 8;   //Serial-In pin 14 on the 75HC595
-int RCLK_Pin = 9;  //Latch Clock pin 12 on the 75HC595
-int SRCLK_Pin = 10; //Clock pin 11 on the 75HC595
+int SER_Pin = 7;   // Serial-In pin 14 on the 75HC595 (Blue)
+int RCLK_Pin = 8;  // Latch Clock pin 12 on the 75HC595 (Yellow)
+int SRCLK_Pin = 9; // Clock pin 11 on the 75HC595 (Green)
 
 //How many of the shift registers - change this
 #define number_of_74hc595s 2 
@@ -31,10 +32,10 @@ boolean registers[numOfRegisterPins];
 void setup() {
   
   pinMode(resetPin, INPUT);
-  digitalWrite(resetPin, HIGH); //pull-up
+  digitalWrite(resetPin, LOW); // Pull Down
   
   pinMode(counterPin, INPUT);
-  digitalWrite(counterPin, HIGH); //pull-up
+  digitalWrite(counterPin, LOW); // Pull Down
   
   pinMode(SER_Pin, OUTPUT);
   pinMode(RCLK_Pin, OUTPUT);
@@ -42,26 +43,29 @@ void setup() {
 
   Serial.begin(9600);
   
-  //reset all register pins
-  // clearRegisters();
-  // writeRegisters();
+  // Reset all register pins
+  clearRegisters();
+  writeRegisters();
   
+  // Show Initial Count
   changeNumber();
   
 }               
 
 void loop(){
   
-  resetState = !digitalRead(resetPin); // pin low -> reset pressed
-  counterState = !digitalRead(counterPin); // pin low -> counter pressed
+  resetState = digitalRead(resetPin);
+  counterState = digitalRead(counterPin);
+  
+  // check if the pushbutton is pressed.
   
   Serial.println(counterState);
   
-  if (resetState) {       
+  if (resetState == HIGH) {       
     resetNumber(); 
   }
   
-  if (counterState) {       
+  if (counterState == HIGH) {       
     changeNumber();  
   }
 
