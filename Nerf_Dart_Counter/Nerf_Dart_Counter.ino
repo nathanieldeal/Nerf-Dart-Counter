@@ -1,5 +1,5 @@
-// Define the LED digit patters, from 0 to 9		
-// Updated 12/9/2015
+// Define the LED digit patterns, from 0 to 9    
+// Updated 12/28/2015
 // Created by: Nathaniel Deal
 //
 // Define the LED digit patterns, from 0 to 9
@@ -8,15 +8,24 @@
 
 
 int displayCount = 20;  // Intial count
+int countSet = displayCount; // Store initial count
 
 int firstDigit;
 int secondDigit;
 boolean resetState; 
 boolean counterState; 
 
+// IR Beam Setup
+const int analogInPin = A2;  // Analog input pin that the ir reciever is attached to
+int sensorValue = 0;        // Value read from the ir beam
+int outputValue = 0;        // Value output to the PWM (analog out)
+boolean hasCleared = true;  // Check for cleared dart
+ 
+// Reset/Counter Pins
 const int resetPin = 5;     // Use digital pin 6 for the reset pin
 const int counterPin = 6;     // Use digital pin 7 for the counter pin
 
+// Shift Register Pins
 int SER_Pin = 7;   // Serial-In pin 14 on the 75HC595 (Blue)
 int RCLK_Pin = 8;  // Latch Clock pin 12 on the 75HC595 (Yellow)
 int SRCLK_Pin = 9; // Clock pin 11 on the 75HC595 (Green)
@@ -54,19 +63,43 @@ void setup() {
 
 void loop(){
   
+  //Track IR Sensor
+  sensorValue = analogRead(analogInPin); // Read the analog in value
+  outputValue = map(sensorValue, 0, 1023, 0, 255);  // Map it to the range of the analog output
+  
+  // Counter / Reset Buttons
   resetState = digitalRead(resetPin);
   counterState = digitalRead(counterPin);
-  
-  // check if the pushbutton is pressed.
-  
-  Serial.println(counterState);
-  
-  if (resetState == HIGH) {       
-    resetNumber(); 
+
+  // Print the results to the serial monitor for testing
+  if (outputValue > 100) {
+    Serial.print("\t output = ");      
+    Serial.println(outputValue);
   }
-  
+
+  // Check if the pushbutton is pressed.
   if (counterState == HIGH) {       
     changeNumber();  
+  }
+
+  // If barrel is clear and beam is broken then countdown
+  if ( hasCleared == true ) {
+  
+    if (outputValue > 175) {       
+      changeNumber(); 
+      hasCleared = false;
+      //delay(2);
+    }
+  }
+  
+  // Check to see if dart has cleared
+  if (outputValue < 50) {
+    hasCleared = true;
+  }
+
+  // Check if the magazine has been ejected and reloaded
+  if (resetState == HIGH) {       
+    resetNumber(); 
   }
 
 }
