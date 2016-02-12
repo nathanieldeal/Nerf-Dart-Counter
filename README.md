@@ -1,8 +1,7 @@
 Nerf-Dart-Counter
 ===================
 
-Repo for foam dart countdown setup powered by Arduino 
+This repo is has been moved to https://github.com/nathanieldeal/AmmoCounter and will be deleted soon.
 
 This [Nerf Dart Counter](http://ammocounter.com/ "Nerf Dart Counter") is now available for sale!
 
-Overview video - https://www.youtube.com/watch?v=6iZIyM2XtUQ
